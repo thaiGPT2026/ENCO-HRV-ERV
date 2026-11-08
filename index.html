@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png?v=2">
+<link rel="apple-touch-icon" href="icon-192.png?v=2">
 <title>Tính tiết kiệm năng lượng HRV/ERV – ENCO</title>
 <style>
 :root{--bg:#f4f6f8;--card:#fff;--ink:#1a2330;--mut:#5b6b7c;--line:#dde3ea;--acc2:#1f77b4;--warn:#b45309;--good:#0b6e4f}
@@ -88,6 +88,7 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
 #printView .in{font-size:11px;columns:2;column-gap:18px}
 #printView .in div{break-inside:avoid;padding:1px 0}
 #printView .concl{margin-top:10px;padding:8px 10px;border-left:4px solid #0b6e4f;background:#f7fbf9;font-size:12px}
+#printView .fullcalc{font-size:11px}#printView .fullcalc .step{page-break-inside:avoid;font-size:11px}#printView .fullcalc .f{font-size:10px}#printView .fullcalc table{font-size:10px}
 #printView .ft{margin-top:10px;font-size:9.5px;color:#5b6b7c;border-top:1px solid #dde3ea;padding-top:4px}
 #printInfo{display:none}
 </style>
@@ -97,7 +98,7 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
   <div class="logo"><img src="logo.jpg" alt="ENCO – Xử lý ẩm không giới hạn"></div>
   <h1>Tính tiết kiệm năng lượng bộ thu hồi nhiệt HRV / ERV</h1>
   <div id="printInfo"></div>
-  <div class="sub">Mô phỏng 8.760 giờ/năm theo dữ liệu khí hậu ERA5-Land (ECMWF) 2021–2025, 49 địa điểm Việt Nam · Giá điện sản xuất EVN từ 01/11/2026<br><b>Phiên bản v11 – 08/11/2026</b></div>
+  <div class="sub">Mô phỏng 8.760 giờ/năm theo dữ liệu khí hậu ERA5-Land (ECMWF) 2021–2025, 49 địa điểm Việt Nam · Giá điện sản xuất EVN từ 01/11/2026<br><b>Phiên bản v13 – 09/11/2026</b></div>
 </header>
 <main>
 
@@ -112,6 +113,11 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
     <div><label>Cao độ địa điểm (m) – tính áp suất khí quyển</label><input type="number" id="elev" value="10" step="1"></div>
   </div>
   <div class="note" id="wxinfo">Đang nạp dữ liệu…</div>
+  <div class="row" style="margin-top:8px;align-items:flex-end">
+    <div style="flex:1;min-width:220px"><label>So sánh 2 nguồn: nạp file EPW/CSV (TMYx, trạm quan trắc…) để đối chiếu với nguồn đang chọn</label><input type="file" id="file2" accept=".epw,.csv,.txt"></div>
+    <button class="sec" id="srcCmpBtn">⚖ So sánh 2 nguồn</button>
+  </div>
+  <div class="note" id="file2info"></div>
   <div class="note">Địa điểm khác: tải file EPW (TMYx) miễn phí tại <a href="https://climate.onebuilding.org/WMO_Region_2_Asia/VNM_Vietnam/index.html">climate.onebuilding.org – Việt Nam</a> hoặc xuất CSV theo giờ từ <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo Historical API</a> rồi nạp vào đây.</div>
 </div>
 
@@ -176,7 +182,8 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
     <button class="sec" id="installBtn" style="display:none">📲 Cài app</button>
   </div>
   <div class="row" style="margin-top:8px">
-    <button id="pdfBtn2">🖨 Xuất PDF / In</button>
+    <button id="pdfBtn2">🖨 In báo cáo</button>
+    <button id="pdfFullBtn2" style="background:#4b5563">🖨 In đầy đủ</button>
     <button id="xlsBtn2" style="background:#0b6e4f">📊 Xuất Excel</button>
     <button id="shareBtn2" style="background:#b45309">📤 Chia sẻ</button>
   </div>
@@ -186,7 +193,8 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
 <div class="card" id="resCard" style="display:none">
   <h2>4. Kết quả (một năm vận hành)</h2>
   <div class="row noprint" style="margin-bottom:12px">
-    <button id="pdfBtn">🖨 Xuất PDF / In</button>
+    <button id="pdfBtn">🖨 In báo cáo</button>
+    <button id="pdfFullBtn" style="background:#4b5563">🖨 In đầy đủ (kèm bản tính)</button>
     <button id="xlsBtn" style="background:#0b6e4f">📊 Xuất Excel</button>
     <button id="shareBtn" style="background:#b45309">📤 Chia sẻ</button>
   </div>
@@ -210,6 +218,11 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
   <div class="tbl" style="margin-top:10px"><table id="mtab"></table></div>
 </div>
 
+<div class="card" id="srcCard" style="display:none">
+  <h2>So sánh hai nguồn khí hậu (cùng thông số thiết bị)</h2>
+  <div id="srcCmp"></div>
+</div>
+
 <div class="card" id="cmpCard" style="display:none">
   <h2>So sánh các địa điểm (cùng thông số thiết bị)</h2>
   <div class="tbl"><table id="ctab"></table></div>
@@ -223,7 +236,7 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
 <div class="card">
   <details><summary>Nguồn dữ liệu &amp; ghi chú</summary>
   <p class="src" id="srcnote"></p>
-  <p class="src">Phiên bản app: <b>v11 – 08/11/2026</b> (báo cáo PDF riêng có logo & biểu đồ).</p>
+  <p class="src">Phiên bản app: <b>v12 – 09/11/2026</b> (in báo cáo / in đầy đủ, so sánh 2 nguồn khí hậu).</p>
   <p class="src">Giá điện: Biểu giá bán lẻ điện cho các ngành sản xuất áp dụng từ 01/11/2026 (Bộ Công Thương / EVN, giá bán lẻ bình quân 2.159,9 đ/kWh chưa VAT) – nguồn: <a href="https://baochinhphu.vn/chi-tiet-bieu-gia-ban-le-dien-moi-ap-dung-tu-ngay-1-11-2026-102261104104434646.htm">baochinhphu.vn</a>, <a href="https://www.sggp.org.vn/chi-tiet-gia-ban-le-dien-ap-dung-tu-ngay-1-11-2026-post880092.html">sggp.org.vn</a>.<br>
   Kết quả là tải nhiệt tránh được tại coil; chưa trừ điện quạt tăng thêm do trở lực lõi trao đổi nhiệt. Hiệu suất ε lấy theo catalogue nhà sản xuất tại lưu lượng thực tế.</p>
   </details>
@@ -309,7 +322,9 @@ function showWx(){if(!WX)return;const s=wxStats(WX);
   $('wxinfo').innerHTML=`<span class="ok">✔ ${WX.name}</span> — ${fmt(s.n)} giờ dữ liệu (${s.ny} năm) · T ngoài trời TB ${fmt(s.avg,1)} °C, min ${fmt(s.mn,1)} °C, max ${fmt(s.mx,1)} °C · RH TB ${fmt(s.rh,0)} %`;}
 
 // ---------- Nạp file EPW / CSV
-function parseFile(name,txt){
+function parseFile(name,txt){const W=parseFileData(name,txt);if(!W){WX=null;return;}WX=W;showWx();}
+let WXFILE=null,srcCmpHtml='';
+function parseFileData(name,txt){
   const lines=txt.split(/\r?\n/);const years={};let loc=name;
   function put(y,T,RH){if(!isFinite(T)||!isFinite(RH))return;const d=years[y]||(years[y]={t:[],rh:[]});d.t.push(Math.round(T*10));d.rh.push(Math.round(RH));}
   if(/\.epw$/i.test(name)||/^LOCATION,/i.test(lines[0])){
@@ -319,7 +334,7 @@ function parseFile(name,txt){
     let hi=-1,ti=-1,ri=-1,yi=-1;
     for(let i=0;i<Math.min(lines.length,20);i++){const c=lines[i].toLowerCase().split(/[,;\t]/);const a=c.findIndex(x=>/temp/.test(x)),b=c.findIndex(x=>/humid|rh/.test(x));
       if(a>=0&&b>=0){hi=i;ti=a;ri=b;yi=c.findIndex(x=>/time|date/.test(x));break;}}
-    if(hi<0){$('wxinfo').innerHTML='<span class="err">Không nhận dạng được file. Cần cột nhiệt độ (temperature) và độ ẩm (humidity/RH).</span>';WX=null;return;}
+    if(hi<0){$('wxinfo').innerHTML='<span class="err">Không nhận dạng được file. Cần cột nhiệt độ (temperature) và độ ẩm (humidity/RH).</span>';return null;}
     let start=null;
     for(let i=hi+1;i<lines.length;i++){const c=lines[i].split(/[,;\t]/);if(c.length<=Math.max(ti,ri))continue;
       const T=parseFloat(c[ti]),RH=parseFloat(c[ri]);if(!isFinite(T))continue;
@@ -327,8 +342,33 @@ function parseFile(name,txt){
     if(start&&years.file)years.file.start=start;
   }
   const ok={};for(const y in years)if(years[y].t.length>=8000)ok[y]=years[y];
-  if(!Object.keys(ok).length){$('wxinfo').innerHTML='<span class="err">File không đủ số giờ trong năm (cần ≥ 8.000 giờ liên tục).</span>';WX=null;return;}
-  WX={name:loc,site:loc,years:ok,multi:Object.keys(ok).length>1};showWx();
+  if(!Object.keys(ok).length){$('wxinfo').innerHTML='<span class="err">File không đủ số giờ trong năm (cần ≥ 8.000 giờ liên tục).</span>';return null;}
+  return {name:loc,site:loc,years:ok,multi:Object.keys(ok).length>1};
+}
+$('file2').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const W=parseFileData(f.name,r.result);if(!W){$('file2info').innerHTML='<span class="err">Không đọc được file so sánh.</span>';WXFILE=null;return;}WXFILE=W;const st=wxStats(W);$('file2info').innerHTML=`<span class="ok">✔ Nguồn 2: ${W.name}</span> — ${fmt(st.n)} giờ · T TB ${fmt(st.avg,1)} °C, max ${fmt(st.mx,1)} °C · RH TB ${fmt(st.rh)} %`;};r.readAsText(f);};
+$('srcCmpBtn').onclick=compareSources;
+function compareSources(){
+  if(!WX){toast('Chưa có nguồn 1');return;}if(!WXFILE){toast('Hãy nạp file EPW/CSV làm nguồn 2');return;}
+  const inp=readInputs();const A=compute(WX,inp),B=compute(WXFILE,inp);const sa=A.stats,sb=B.stats,ta=A.tot,tb=B.tot;
+  const pct=(a,b)=>a?fmt((b-a)/a*100,1)+' %':'–';
+  const rows=[['Nguồn dữ liệu',WX.name+' (ERA5-Land/Open-Meteo)',WXFILE.name+' (file nạp)',''],
+   ['Số giờ / số năm',fmt(sa.n)+' / '+sa.ny,fmt(sb.n)+' / '+sb.ny,''],
+   ['T ngoài trời TB (°C)',fmt(sa.avg,1),fmt(sb.avg,1),fmt(sb.avg-sa.avg,1)+' °C'],
+   ['T max / min (°C)',fmt(sa.mx,1)+' / '+fmt(sa.mn,1),fmt(sb.mx,1)+' / '+fmt(sb.mn,1),''],
+   ['RH TB (%)',fmt(sa.rh),fmt(sb.rh),fmt(sb.rh-sa.rh)+' %'],
+   ['Giờ thu hồi có lợi',fmt(ta.h),fmt(tb.h),pct(ta.h,tb.h)],
+   ['kWh nhiệt hiển',fmt(ta.qs),fmt(tb.qs),pct(ta.qs,tb.qs)],
+   ['kWh nhiệt ẩn',fmt(ta.ql),fmt(tb.ql),pct(ta.ql,tb.ql)],
+   ['kWh nhiệt tổng',fmt(ta.q),fmt(tb.q),pct(ta.q,tb.q)],
+   ['kWh điện gộp',fmt(ta.e),fmt(tb.e),pct(ta.e,tb.e)],
+   ['kWh điện quạt',fmt(ta.ef),fmt(tb.ef),pct(ta.ef,tb.ef)],
+   ['kWh điện RÒNG',fmt(ta.e-ta.ef),fmt(tb.e-tb.ef),pct(ta.e-ta.ef,tb.e-tb.ef)],
+   ['Tiền RÒNG (đ/năm)',fmt(ta.c-ta.cf),fmt(tb.c-tb.cf),pct(ta.c-ta.cf,tb.c-tb.cf)],
+   ['kW thu hồi lớn nhất',fmt(ta.pk,1),fmt(tb.pk,1),pct(ta.pk,tb.pk)]];
+  let h='<div class="tbl"><table><tr><th>Chỉ tiêu</th><th>Nguồn 1</th><th>Nguồn 2</th><th>Chênh (2 so với 1)</th></tr>';
+  rows.forEach(r=>h+=`<tr><td class="l">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`);h+='</table></div>';
+  h+=`<div class="note">Chênh lệch tiền ròng ${pct(ta.c-ta.cf,tb.c-tb.cf)}. Dữ liệu tái phân tích (ô lưới ~9 km) thường cho cực trị "mềm" hơn trạm quan trắc 1–2 °C nhưng tổng năng lượng năm sát nhau; chênh dưới ±10 % là bình thường.</div>`;
+  srcCmpHtml=h;$('srcCmp').innerHTML=h;$('srcCard').style.display='';$('srcCard').scrollIntoView({behavior:'smooth'});
 }
 
 // ---------- Đọc input
@@ -512,8 +552,9 @@ function drawChart(mon){
 
 // ---------- Xuất PDF / Excel / Chia sẻ
 function needRes(){if(!lastRes){toast('Hãy bấm Tính toán trước');return false;}return true;}
-$('pdfBtn').onclick=()=>{if(!needRes())return;buildPrintView();toast('Chọn "Lưu dưới dạng PDF" rồi bấm nút PDF');setTimeout(()=>window.print(),400);};
-function buildPrintView(){
+$('pdfBtn').onclick=()=>{if(!needRes())return;buildPrintView(false);toast('Chọn "Lưu dưới dạng PDF" rồi bấm nút PDF');setTimeout(()=>window.print(),400);};
+$('pdfFullBtn').onclick=()=>{if(!needRes())return;buildPrintView(true);toast('Bản in đầy đủ kèm bản tính tay');setTimeout(()=>window.print(),400);};
+function buildPrintView(full){
   const R=lastRes,i=R.inp,t=R.tot,f=finance(t,i);
   const dayList=[1,2,3,4,5,6,0].filter(d=>i.days.has(d)).map(d=>DAYN[d]).join(', ');
   const tf=i.tf?`${TNAME[i.tk]} (${fmt(i.tf[0])}/${fmt(i.tf[1])}/${fmt(i.tf[2])} đ/kWh)`:`cố định ${fmt(i.pc)} đ/kWh`;
@@ -546,7 +587,7 @@ ${chart?`<img class="chart" src="${chart}" alt="Biểu đồ theo tháng">`:''}
 <h2>Theo tháng</h2>
 <table><tr><th>Tháng</th><th>Giờ có lợi</th><th>kWh nhiệt hiển</th><th>kWh nhiệt ẩn</th><th>kWh nhiệt tổng</th><th>kWh điện gộp</th><th>kWh quạt</th><th>kWh ròng</th><th>Tiền ròng (đ)</th></tr>${rows}</table>
 <div class="concl"><b>Kết luận:</b> Bộ ${TYPEN[i.type]}${i.model?' '+i.model:''}, ${fmt(i.V)} m³/h tại ${R.W.site}: thu hồi ${fmt(t.q)} kWh nhiệt/năm; tiết kiệm điện gộp ${fmt(t.e)} kWh, trừ điện quạt ${fmt(t.ef)} kWh → <b>tiết kiệm ròng ${fmt(t.e-t.ef)} kWh điện/năm ≈ ${fmt(t.c-t.cf)} đồng/năm</b> (gồm VAT)${i.capex>0?`; đầu tư ${fmt(i.capex)} đ, bảo dưỡng ${fmt(f.om)} đ/năm → <b>hoàn vốn ${f.pbTxt}</b>, lợi ích tích lũy ${i.life} năm ≈ ${fmt(f.cum)} đ`:''}.</div>
-<div class="ft">Phương pháp: mô phỏng từng giờ (8.760 h/năm) theo enthalpy không khí; Q = ṁ·[cp·ΔT·εs + Δ W·2501·εL]; điện quạt P = (V̇s·Δps + V̇e·Δpe)/η; tiền điện tính theo khung giờ EVN từ 01/11/2026. Dữ liệu khí hậu ERA5-Land (ECMWF/Copernicus) qua Open-Meteo. Kết quả là ước tính, hiệu suất ε và Δp lấy theo catalogue nhà sản xuất. App: ${location.href}</div>`;
+<div class="ft">Phương pháp: mô phỏng từng giờ (8.760 h/năm) theo enthalpy không khí; Q = ṁ·[cp·ΔT·εs + Δ W·2501·εL]; điện quạt P = (V̇s·Δps + V̇e·Δpe)/η; tiền điện tính theo khung giờ EVN từ 01/11/2026. Dữ liệu khí hậu ERA5-Land (ECMWF/Copernicus) qua Open-Meteo. Kết quả là ước tính, hiệu suất ε và Δp lấy theo catalogue nhà sản xuất. App: ${location.href}</div>`+(full?`<div style="page-break-before:always"></div><h2>Bản tính chi tiết (kiểm tra bằng tay)</h2><div class="fullcalc">${$('report').innerHTML}</div>`:'')+(srcCmpHtml?`<div style="page-break-before:always"></div><h2>So sánh hai nguồn khí hậu</h2>${srcCmpHtml}`:'');
 }
 function buildWorkbook(){
   const R=lastRes,i=R.inp,t=R.tot,wb=XLSX.utils.book_new();
@@ -594,7 +635,7 @@ $('shareBtn').onclick=async()=>{if(!needRes())return;
     copy(text);
   }catch(e){if(e&&e.name!=='AbortError')copy(text);}
 };
-$('pdfBtn2').onclick=()=>$('pdfBtn').onclick();$('xlsBtn2').onclick=()=>$('xlsBtn').onclick();$('shareBtn2').onclick=()=>$('shareBtn').onclick();
+$('pdfBtn2').onclick=()=>$('pdfBtn').onclick();$('pdfFullBtn2').onclick=()=>$('pdfFullBtn').onclick();$('xlsBtn2').onclick=()=>$('xlsBtn').onclick();$('shareBtn2').onclick=()=>$('shareBtn').onclick();
 // ---------- PWA
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
 let deferredPrompt=null;
