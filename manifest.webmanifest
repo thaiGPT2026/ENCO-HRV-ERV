@@ -1,0 +1,26 @@
+{
+ "name": "ENCO – Tính tiết kiệm HRV/ERV",
+ "short_name": "HRV/ERV ENCO",
+ "description": "Tính kWh nhiệt, điện và tiền điện tiết kiệm của bộ thu hồi nhiệt HRV/ERV theo khí hậu 49 tỉnh Việt Nam",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#0f2a3f",
+ "theme_color": "#0f2a3f",
+ "lang": "vi",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
