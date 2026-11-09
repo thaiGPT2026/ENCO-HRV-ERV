@@ -1,5 +1,5 @@
 // Service worker – ENCO HRV/ERV v9: index.html ưu tiên mạng, dữ liệu ưu tiên cache
-const VER='v13-2026-11-09';
+const VER='v15-2026-11-09';
 const CORE=['./','./index.html','./manifest.webmanifest','./logo.jpg','./icon-192.png','./icon-512.png','./wx_all.js','./xlsx.full.min.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VER).then(c=>c.addAll(CORE)));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==VER)await caches.delete(k);await self.clients.claim();})());});

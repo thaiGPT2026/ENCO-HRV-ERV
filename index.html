@@ -98,7 +98,7 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
   <div class="logo"><img src="logo.jpg" alt="ENCO – Xử lý ẩm không giới hạn"></div>
   <h1>Tính tiết kiệm năng lượng bộ thu hồi nhiệt HRV / ERV</h1>
   <div id="printInfo"></div>
-  <div class="sub">Mô phỏng 8.760 giờ/năm theo dữ liệu khí hậu ERA5-Land (ECMWF) 2021–2025, 49 địa điểm Việt Nam · Giá điện sản xuất EVN từ 01/11/2026<br><b>Phiên bản v13 – 09/11/2026</b></div>
+  <div class="sub">Mô phỏng 8.760 giờ/năm theo dữ liệu khí hậu ERA5-Land (ECMWF) 2021–2025, 49 địa điểm Việt Nam · Giá điện sản xuất EVN từ 01/11/2026<br><b>Phiên bản v15 – 09/11/2026</b></div>
 </header>
 <main>
 
@@ -132,14 +132,22 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
         <option value="e-wheel" selected>Bánh xe enthalpy (enthalpy wheel – tổng nhiệt)</option>
       </select></div>
     <div><label>Lưu lượng gió cấp qua bộ trao đổi (m³/h)</label><input type="number" id="flow" value="5000" min="1" step="100"></div>
-    <div><label>Hiệu suất nhiệt hiển ε<sub>s</sub> (%)</label><input type="number" id="effS" value="70" min="0" max="100" step="1"></div>
-    <div><label>Hiệu suất ẩn ε<sub>L</sub> (%) – chỉ loại enthalpy</label><input type="number" id="effL" value="60" min="0" max="100" step="1"></div>
+    <div><label>Cách ghi hiệu suất trong catalogue</label>
+      <select id="effMode">
+        <option value="total" selected>ε nhiệt độ + ε enthalpy/tổng (Daikin, Mitsubishi, Panasonic…)</option>
+        <option value="latent">ε nhiệt hiển + ε nhiệt ẩn (AHRI 1060, ASHRAE 84)</option>
+      </select></div>
+    <div><label>Chế độ LÀM LẠNH – hiệu suất nhiệt độ/hiển ε<sub>s</sub> (%)</label><input type="number" id="effS" value="65" min="0" max="100" step="0.5"></div>
+    <div><label id="effLlab">Chế độ LÀM LẠNH – hiệu suất enthalpy/tổng ε<sub>t</sub> (%)</label><input type="number" id="effL" value="62.5" min="0" max="100" step="0.5"></div>
+    <div><label>Chế độ SƯỞI – hiệu suất nhiệt độ/hiển ε<sub>s</sub> (%)</label><input type="number" id="effSH" value="79.5" min="0" max="100" step="0.5"></div>
+    <div><label id="effLHlab">Chế độ SƯỞI – hiệu suất enthalpy/tổng ε<sub>t</sub> (%)</label><input type="number" id="effLH" value="72" min="0" max="100" step="0.5"></div>
     <div><label>Nhiệt độ không khí thải từ phòng (°C)</label><input type="number" id="ti" value="25" step="0.5"></div>
     <div><label>Độ ẩm tương đối trong phòng (%)</label><input type="number" id="rhi" value="55" min="1" max="100" step="1"></div>
     <div><label>Giờ bắt đầu vận hành</label><input type="number" id="hStart" value="0" min="0" max="23" step="1"></div>
     <div><label>Giờ kết thúc (24 = cả ngày)</label><input type="number" id="hEnd" value="24" min="1" max="24" step="1"></div>
   </div>
   <div style="margin-top:10px"><label>Ngày vận hành trong tuần</label><div class="days" id="days"></div></div>
+  <div class="note" id="effNote"></div>
   <h3 style="margin-top:14px">Điện quạt tăng thêm do trở lực lõi trao đổi nhiệt</h3>
   <div class="grid">
     <div><label>Sụt áp dòng gió cấp qua lõi Δp<sub>s</sub> (Pa)</label><input type="number" id="dps" value="150" min="0" step="10"></div>
@@ -179,7 +187,7 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
     <button class="sec" id="cmp">So sánh các địa điểm</button>
     <button class="sec" id="copyRes">Sao chép bản tính</button>
     <button class="sec" id="copyCsv">Sao chép CSV theo giờ</button>
-    <button class="sec" id="installBtn" style="display:none">📲 Cài app</button>
+    <button class="sec" id="installBtn">📲 Cài app</button>
   </div>
   <div class="row" style="margin-top:8px">
     <button id="pdfBtn2">🖨 In báo cáo</button>
@@ -236,7 +244,7 @@ details summary{cursor:pointer;color:var(--acc2);font-size:13.5px}
 <div class="card">
   <details><summary>Nguồn dữ liệu &amp; ghi chú</summary>
   <p class="src" id="srcnote"></p>
-  <p class="src">Phiên bản app: <b>v12 – 09/11/2026</b> (in báo cáo / in đầy đủ, so sánh 2 nguồn khí hậu).</p>
+  <p class="src">Phiên bản app: <b>v14 – 09/11/2026</b> (hiệu suất theo catalogue: ε nhiệt độ + ε enthalpy, tách lạnh/sưởi).</p>
   <p class="src">Giá điện: Biểu giá bán lẻ điện cho các ngành sản xuất áp dụng từ 01/11/2026 (Bộ Công Thương / EVN, giá bán lẻ bình quân 2.159,9 đ/kWh chưa VAT) – nguồn: <a href="https://baochinhphu.vn/chi-tiet-bieu-gia-ban-le-dien-moi-ap-dung-tu-ngay-1-11-2026-102261104104434646.htm">baochinhphu.vn</a>, <a href="https://www.sggp.org.vn/chi-tiet-gia-ban-le-dien-ap-dung-tu-ngay-1-11-2026-post880092.html">sggp.org.vn</a>.<br>
   Kết quả là tải nhiệt tránh được tại coil; chưa trừ điện quạt tăng thêm do trở lực lõi trao đổi nhiệt. Hiệu suất ε lấy theo catalogue nhà sản xuất tại lưu lượng thực tế.</p>
   </details>
@@ -295,7 +303,12 @@ $('site').onchange=()=>{const f=$('site').value==='file';$('fileBox').style.disp
   if(!f){fillYears();loadSite();}else{WX=null;$('wxinfo').innerHTML='Chọn file để nạp dữ liệu.';}};
 $('year').onchange=loadSite;
 $('type').onchange=typeChange;
-function typeChange(){$('effL').disabled=$('type').value.startsWith('s');}
+function typeChange(){const sens=$('type').value.startsWith('s');$('effL').disabled=sens;$('effLH').disabled=sens;$('effMode').disabled=sens;effModeChange();}
+$('effMode').onchange=effModeChange;
+function effModeChange(){const tot=$('effMode').value==='total';const sens=$('type').value.startsWith('s');
+  $('effLlab').innerHTML=tot?'Chế độ LÀM LẠNH – hiệu suất enthalpy/tổng ε<sub>t</sub> (%)':'Chế độ LÀM LẠNH – hiệu suất nhiệt ẩn ε<sub>L</sub> (%)';
+  $('effLHlab').innerHTML=tot?'Chế độ SƯỞI – hiệu suất enthalpy/tổng ε<sub>t</sub> (%)':'Chế độ SƯỞI – hiệu suất nhiệt ẩn ε<sub>L</sub> (%)';
+  $('effNote').innerHTML=sens?'Loại nhiệt hiển: chỉ dùng ε<sub>s</sub>; không có trao đổi ẩm.':(tot?'Catalogue kiểu Daikin: ε<sub>t</sub> tính trên chênh enthalpy → Q<sub>tổng</sub> = ṁ·(h<sub>o</sub>−h<sub>i</sub>)·ε<sub>t</sub>; nhiệt ẩn = Q<sub>tổng</sub> − Q<sub>hiển</sub>. Chế độ làm lạnh áp dụng khi enthalpy ngoài trời &gt; trong phòng, ngược lại là chế độ sưởi.':'Chuẩn AHRI/ASHRAE: Q<sub>hiển</sub> = ṁ·c<sub>p</sub>·ΔT·ε<sub>s</sub>; Q<sub>ẩn</sub> = ṁ·ΔW·2501·ε<sub>L</sub>.');}
 $('tariff').onchange=()=>{$('customBox').style.display=$('tariff').value==='custom'?'':'none';};
 $('heat').onchange=()=>{$('copH').disabled=!$('heat').checked;};$('copH').disabled=true;
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>parseFile(f.name,r.result);r.readAsText(f);};
@@ -374,7 +387,10 @@ function compareSources(){
 // ---------- Đọc input
 function readInputs(){
   const type=$('type').value;
-  return {type,V:+$('flow').value,es:+$('effS').value/100,el:type.startsWith('s')?0:+$('effL').value/100,
+  const sens=type.startsWith('s');const effMode=sens?'latent':$('effMode').value;const tot=effMode==='total';
+  const effC={s:+$('effS').value/100,l:sens?0:(tot?null:+$('effL').value/100),t:sens?null:(tot?+$('effL').value/100:null)};
+  const effH={s:+$('effSH').value/100,l:sens?0:(tot?null:+$('effLH').value/100),t:sens?null:(tot?+$('effLH').value/100:null)};
+  return {type,V:+$('flow').value,es:effC.s,el:sens?0:+$('effL').value/100,effMode,effC,effH,
     Ti:+$('ti').value,RHi:+$('rhi').value,P:pressure(+$('elev').value),elev:+$('elev').value,
     hS:+$('hStart').value,hE:+$('hEnd').value,bypass:$('bypass').checked,heat:$('heat').checked,
     cop:+$('cop').value,copH:+$('copH').value,dps:+$('dps').value,dpe:+$('dpe').value,Ve:+$('flowE').value,etaF:+$('etaF').value/100,fanBypass:$('fanBypass').checked,capex:+$('capex').value,omPct:+$('omPct').value,life:+$('life').value,vatPct:+$('vat').value,vat:1+(+$('vat').value)/100,
@@ -411,7 +427,9 @@ function compute(W,inp){
       if(op){
         mon[m].hop+=1/ny;tot.hop+=1/ny;
         So=state(To,RHo,P);rho=(P-So.pv)*1000/(287.055*(To+273.15));mda=V/3600*rho;
-        qs=mda*(1.006+1.86*So.W)*(To-Ti)*es;ql=mda*(So.W-Si.W)*2501*el;const qt=qs+ql;
+        const cool=So.h>Si.h;const E=cool?inp.effC:inp.effH;const isTot=E.t!=null;
+        qs=mda*(1.006+1.86*So.W)*(To-Ti)*E.s;let qt;
+        if(isTot){qt=mda*(So.h-Si.h)*E.t;ql=qt-qs;}else{ql=mda*(So.W-Si.W)*2501*(E.l||0);qt=qs+ql;}
         let mode='';
         if(qt>0){q=qt;e=q/cop;tot.qc+=q/ny;mode='lạnh';}
         else if(qt<0&&heat){q=-qt;e=q/copH;tot.qh+=q/ny;mode='sưởi';}
@@ -423,7 +441,7 @@ function compute(W,inp){
           mon[m].qs+=Math.abs(qs)/ny;mon[m].ql+=Math.abs(ql)/ny;mon[m].q+=q/ny;mon[m].e+=e/ny;mon[m].c+=c/ny;mon[m].h+=1/ny;
           tot.qs+=Math.abs(qs)/ny;tot.ql+=Math.abs(ql)/ny;tot.q+=q/ny;tot.e+=e/ny;tot.c+=c/ny;tot.h+=1/ny;
           band[bn].e+=e/ny;band[bn].c+=c/ny;
-          if(q>tot.pk){tot.pk=q;tot.pkRow={date:dt.toLocaleDateString('vi-VN'),h:hr,dow,To,RHo,So,rho,mda,qs,ql,q,e,price,bn,c,mode};}
+          if(q>tot.pk){tot.pk=q;tot.pkRow={date:dt.toLocaleDateString('vi-VN'),h:hr,dow,To,RHo,So,rho,mda,qs,ql,q,e,price,bn,c,mode,E,isTot,cool};}
         }
       }
       if(!W.multi)hourly.push({date:dt.toLocaleDateString('vi-VN'),h:hr,T:To,RH:RHo,W:So?So.W:0,hh:So?So.h:0,qs,ql,q,e,p:Math.round(price),c,ef,cf});
@@ -432,6 +450,7 @@ function compute(W,inp){
   return {W,inp,Si,mon,band,tot,ny,hourly:W.multi?null:hourly,stats:wxStats(W)};
 }
 
+function effTxt(E){if(!E)return '–';if(E.t!=null)return `εs ${fmt(E.s*100,1)} % + ε tổng ${fmt(E.t*100,1)} %`;if(E.l)return `εs ${fmt(E.s*100,1)} % + εL ${fmt(E.l*100,1)} %`;return `εs ${fmt(E.s*100,1)} % (chỉ nhiệt hiển)`;}
 // ---------- Tài chính
 function finance(tot,inp){const net=tot.c-tot.cf;const om=inp.capex*inp.omPct/100;const annual=net-om;
   let pb=null,pbTxt='–';if(inp.capex>0){if(annual>0){pb=inp.capex/annual;pbTxt=fmt(pb,1)+' năm';}else pbTxt='không hoàn vốn';}else pbTxt='nhập giá đầu tư';
@@ -467,7 +486,8 @@ function buildReport(R,inp){
 <tr><td class="l">Dữ liệu khí hậu</td><td>${R.W.name} – ERA5-Land/Open-Meteo (${fmt(stats.n)} giờ, ${ny} năm)</td></tr>
 <tr><td class="l">Ngoài trời cả năm: T TB / min / max, RH TB</td><td>${fmt(stats.avg,1)} / ${fmt(stats.mn,1)} / ${fmt(stats.mx,1)} °C, ${fmt(stats.rh)} %</td></tr>
 <tr><td class="l">Lưu lượng gió cấp V</td><td>${fmt(inp.V)} m³/h</td></tr>
-<tr><td class="l">Hiệu suất hiển ε<sub>s</sub> / ẩn ε<sub>L</sub></td><td>${fmt(inp.es*100)} % / ${fmt(inp.el*100)} %</td></tr>
+<tr><td class="l">Hiệu suất (làm lạnh)</td><td>${effTxt(inp.effC)}</td></tr>
+<tr><td class="l">Hiệu suất (sưởi)</td><td>${effTxt(inp.effH)}</td></tr>
 <tr><td class="l">Không khí thải từ phòng T<sub>i</sub> / RH<sub>i</sub></td><td>${inp.Ti} °C / ${inp.RHi} %</td></tr>
 <tr><td class="l">Cao độ / áp suất khí quyển P</td><td>${inp.elev} m / ${fmt(P,3)} kPa</td></tr>
 <tr><td class="l">Lịch vận hành</td><td>${inp.hS}h–${inp.hE}h; ${dayList}</td></tr>
@@ -493,8 +513,9 @@ W_o = 0,622·${fmt(So.pv,4)}/(${fmt(P,3)} − ${fmt(So.pv,4)}) = ${fmt(So.W,5)} 
 h_o = 1,006·${pk.To} + ${fmt(So.W,5)}·(2501 + 1,86·${pk.To}) = ${fmt(So.h,2)} kJ/kg   (Δh = h_o − h_i = ${fmt(So.h-Si.h,2)} kJ/kg)</div></div>
 <div class="step"><b>C2.</b> Khối lượng riêng không khí khô &amp; lưu lượng khối:<div class="f">ρ_da = (P − p_v)·1000/(287,055·(T_o + 273,15)) = (${fmt(P,3)} − ${fmt(So.pv,4)})·1000/(287,055·${fmt(pk.To+273.15,2)}) = ${fmt(pk.rho,4)} kg/m³
 ṁ = V/3600·ρ_da = ${fmt(inp.V)}/3600·${fmt(pk.rho,4)} = ${fmt(pk.mda,4)} kg/s</div></div>
-<div class="step"><b>C3.</b> Nhiệt hiển thu hồi:<div class="f">Q_s = ṁ·(1,006 + 1,86·W_o)·(T_o − T_i)·ε_s = ${fmt(pk.mda,4)}·(1,006 + 1,86·${fmt(So.W,5)})·(${pk.To} − ${inp.Ti})·${inp.es} = ${fmt(pk.qs,2)} kW</div></div>
-<div class="step"><b>C4.</b> Nhiệt ẩn thu hồi${inp.el===0?' (loại nhiệt hiển: ε_L = 0)':''}:<div class="f">Q_L = ṁ·(W_o − W_i)·2501·ε_L = ${fmt(pk.mda,4)}·(${fmt(So.W,5)} − ${fmt(Si.W,5)})·2501·${inp.el} = ${fmt(pk.ql,2)} kW</div></div>
+<div class="step"><b>C3.</b> Chế độ: ${pk.cool?'LÀM LẠNH (h_o > h_i)':'SƯỞI (h_o < h_i)'} → dùng ${effTxt(pk.E)}. Nhiệt hiển thu hồi:<div class="f">Q_s = ṁ·(1,006 + 1,86·W_o)·(T_o − T_i)·ε_s = ${fmt(pk.mda,4)}·(1,006 + 1,86·${fmt(So.W,5)})·(${pk.To} − ${inp.Ti})·${pk.E.s} = ${fmt(pk.qs,2)} kW</div></div>
+${pk.isTot?`<div class="step"><b>C4.</b> Tổng nhiệt thu hồi theo hiệu suất enthalpy (catalogue):<div class="f">Q_tổng = ṁ·(h_o − h_i)·ε_t = ${fmt(pk.mda,4)}·(${fmt(So.h,2)} − ${fmt(Si.h,2)})·${pk.E.t} = ${fmt(pk.qs+pk.ql,2)} kW
+Nhiệt ẩn = Q_tổng − Q_s = ${fmt(pk.qs+pk.ql,2)} − ${fmt(pk.qs,2)} = ${fmt(pk.ql,2)} kW</div></div>`:`<div class="step"><b>C4.</b> Nhiệt ẩn thu hồi${!pk.E.l?' (loại nhiệt hiển: ε_L = 0)':''}:<div class="f">Q_L = ṁ·(W_o − W_i)·2501·ε_L = ${fmt(pk.mda,4)}·(${fmt(So.W,5)} − ${fmt(Si.W,5)})·2501·${pk.E.l||0} = ${fmt(pk.ql,2)} kW</div></div>`}
 <div class="step"><b>C5.</b> Tổng nhiệt thu hồi trong giờ này: <div class="f">Q = Q_s + Q_L = ${fmt(pk.q,2)} kW  →  ${fmt(pk.q,2)} kWh nhiệt (chế độ ${pk.mode})</div></div>
 <div class="step"><b>C6.</b> Điện tiết kiệm: <div class="f">E = Q/COP = ${fmt(pk.q,2)}/${pk.mode==='sưởi'?inp.copH:inp.cop} = ${fmt(pk.e,3)} kWh</div></div>
 <div class="step"><b>C7.</b> Tiền điện (khung giờ ${pk.bn}, ${fmt(pk.price)} đ/kWh, VAT ${inp.vatPct} %): <div class="f">Tiền = ${fmt(pk.e,3)}·${fmt(pk.price)}·${inp.vat} = ${fmt(pk.c)} đ</div></div>
@@ -573,7 +594,7 @@ function buildPrintView(full){
 <div class="in">
 <div>Loại bộ trao đổi nhiệt: <b>${TYPEN[i.type]}</b></div>
 <div>Lưu lượng gió cấp / thải: <b>${fmt(i.V)} / ${fmt(i.Ve)} m³/h</b></div>
-<div>Hiệu suất hiển εs / ẩn εL: <b>${fmt(i.es*100)} % / ${fmt(i.el*100)} %</b></div>
+<div>Hiệu suất làm lạnh: <b>${effTxt(i.effC)}</b>; sưởi: <b>${effTxt(i.effH)}</b></div>
 <div>Không khí phòng: <b>${i.Ti} °C / ${i.RHi} %</b></div>
 <div>Dữ liệu khí hậu: <b>ERA5-Land, ${fmt(R.stats.n)} giờ, ${R.ny} năm</b> (T TB ${fmt(R.stats.avg,1)} °C, RH TB ${fmt(R.stats.rh)} %)</div>
 <div>Lịch vận hành: <b>${i.hS}h–${i.hE}h, ${dayList}</b>; bypass: ${i.bypass?'có':'không'}; sưởi: ${i.heat?'có (COP '+i.copH+')':'không'}</div>
@@ -597,7 +618,7 @@ function buildWorkbook(){
     ['THÔNG SỐ ĐẦU VÀO'],['Dự án / khách hàng',i.proj||''],['Model thiết bị',i.model||''],['Loại bộ trao đổi nhiệt',TYPEN[i.type]],
     ['Dữ liệu khí hậu',R.W.name+' – ERA5-Land/Open-Meteo'],['Số giờ dữ liệu / số năm',R.stats.n,R.ny],
     ['T ngoài trời TB / min / max (°C)',+R.stats.avg.toFixed(1),+R.stats.mn.toFixed(1),+R.stats.mx.toFixed(1)],['RH ngoài trời TB (%)',Math.round(R.stats.rh)],
-    ['Lưu lượng gió cấp (m³/h)',i.V],['Hiệu suất hiển εs (%)',i.es*100],['Hiệu suất ẩn εL (%)',i.el*100],
+    ['Lưu lượng gió cấp (m³/h)',i.V],['Cách ghi hiệu suất',i.effMode==='total'?'ε nhiệt độ + ε enthalpy (tổng)':'ε hiển + ε ẩn'],['Hiệu suất làm lạnh',effTxt(i.effC)],['Hiệu suất sưởi',effTxt(i.effH)],
     ['Nhiệt độ phòng (°C)',i.Ti],['RH phòng (%)',i.RHi],['Cao độ (m) / Áp suất (kPa)',i.elev,+i.P.toFixed(3)],
     ['Lịch vận hành',`${i.hS}h–${i.hE}h; ${dayList}`],['Bypass tự động',i.bypass?'Có':'Không'],['Tính sưởi',i.heat?'Có':'Không'],
     ['COP lạnh',i.cop],['Sụt áp lõi Δp_s / Δp_e (Pa)',i.dps,i.dpe],['Lưu lượng gió thải (m³/h)',i.Ve],['Hiệu suất quạt η (%)',i.etaF*100],['P quạt tăng thêm (kW)',+t.pFan.toFixed(3)],['COP sưởi',i.heat?i.copH:''],['Biểu giá điện (chưa VAT)',tf],['VAT (%)',i.vatPct],[],
@@ -626,7 +647,7 @@ function fileName(ext){const i=lastRes.inp;const base=('HRV-ERV_'+(i.model||'')+
 $('xlsBtn').onclick=()=>{if(!needRes())return;try{XLSX.writeFile(buildWorkbook(),fileName('xlsx'),{compression:true});toast('Đã xuất file Excel');}catch(e){toast('Không xuất được Excel');}};
 $('shareBtn').onclick=async()=>{if(!needRes())return;
   const t=lastRes.tot,i=lastRes.inp;
-  const text=`ENCO – Tiết kiệm năng lượng ${TYPEN[i.type]}${i.model?' '+i.model:''}\nĐịa điểm: ${lastRes.W.name}\nLưu lượng ${fmt(i.V)} m³/h, εs ${i.es*100}%, εL ${i.el*100}%, phòng ${i.Ti}°C/${i.RHi}%\nNhiệt thu hồi: ${fmt(t.q)} kWh/năm\nĐiện tiết kiệm gộp (COP ${i.cop}): ${fmt(t.e)} kWh/năm; điện quạt tăng thêm: ${fmt(t.ef)} kWh/năm\nTiết kiệm RÒNG: ${fmt(t.e-t.ef)} kWh/năm ≈ ${fmt(t.c-t.cf)} đ/năm (gồm VAT)${i.capex>0?`\nĐầu tư ${fmt(i.capex)} đ, bảo dưỡng ${i.omPct}%/năm → hoàn vốn ${finance(t,i).pbTxt}`:''}\nTính bằng app: ${location.href}`;
+  const text=`ENCO – Tiết kiệm năng lượng ${TYPEN[i.type]}${i.model?' '+i.model:''}\nĐịa điểm: ${lastRes.W.name}\nLưu lượng ${fmt(i.V)} m³/h, ${effTxt(i.effC)}, phòng ${i.Ti}°C/${i.RHi}%\nNhiệt thu hồi: ${fmt(t.q)} kWh/năm\nĐiện tiết kiệm gộp (COP ${i.cop}): ${fmt(t.e)} kWh/năm; điện quạt tăng thêm: ${fmt(t.ef)} kWh/năm\nTiết kiệm RÒNG: ${fmt(t.e-t.ef)} kWh/năm ≈ ${fmt(t.c-t.cf)} đ/năm (gồm VAT)${i.capex>0?`\nĐầu tư ${fmt(i.capex)} đ, bảo dưỡng ${i.omPct}%/năm → hoàn vốn ${finance(t,i).pbTxt}`:''}\nTính bằng app: ${location.href}`;
   try{
     if(navigator.canShare){const out=XLSX.write(buildWorkbook(),{bookType:'xlsx',type:'array',compression:true});
       const f=new File([out],fileName('xlsx'),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -639,9 +660,21 @@ $('pdfBtn2').onclick=()=>$('pdfBtn').onclick();$('pdfFullBtn2').onclick=()=>$('p
 // ---------- PWA
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
 let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').style.display='';});
-$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').style.display='none';};
-window.addEventListener('appinstalled',()=>{$('installBtn').style.display='none';toast('Đã cài app vào màn hình chính');});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+$('installBtn').onclick=async()=>{
+  if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;return;}
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const ua=navigator.userAgent;const ios=/iPhone|iPad|iPod/.test(ua);const android=/Android/.test(ua);
+  let msg;
+  if(standalone)msg='<b>App đã được cài</b> – anh/chị đang dùng bản cài đặt.';
+  else if(ios)msg='<b>iPhone/iPad:</b> dùng Safari → bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên) → <b>Thêm vào MH chính</b>.';
+  else if(android)msg='<b>Android:</b> mở bằng <b>Chrome</b> → menu ⋮ → <b>Cài đặt ứng dụng</b> / <b>Thêm vào màn hình chính</b>. (Cốc Cốc, Samsung Internet, Zalo… không cài được – hãy copy link sang Chrome.)';
+  else msg='<b>Máy tính:</b> mở link bằng <b>Chrome</b> hoặc <b>Edge</b> → bấm biểu tượng <b>màn hình có mũi tên ⬇</b> ở cuối thanh địa chỉ → <b>Cài đặt</b>.<br>Không thấy biểu tượng: Chrome ⋮ → <i>Truyền, lưu và chia sẻ</i> → <i>Cài đặt trang này dưới dạng ứng dụng</i>; Edge ⋯ → <i>Ứng dụng</i> → <i>Cài đặt trang này dưới dạng ứng dụng</i>.<br>Cốc Cốc/Firefox/Safari: không có chức năng cài – dùng trực tiếp trên trình duyệt (đủ tính năng), bấm <b>Ctrl+D</b> để lưu.';
+  showDialog('Cài app lên thiết bị',msg+'<br><br><span class="hint">Link app: <b>'+location.href.split('#')[0]+'</b></span>');
+};
+function showDialog(title,html){let d=$('dlg');if(!d){d=document.createElement('div');d.id='dlg';d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px';d.onclick=e=>{if(e.target===d)d.remove();};document.body.appendChild(d);}
+  d.innerHTML=`<div style="background:#fff;border-radius:12px;max-width:520px;width:100%;padding:18px;font-size:14.5px;line-height:1.5"><h3 style="margin:0 0 10px;color:#1f77b4">${title}</h3><div>${html}</div><div class="row" style="justify-content:flex-end;margin-top:14px"><button class="sec" onclick="document.getElementById('dlg').remove()">Đóng</button></div></div>`;}
+window.addEventListener('appinstalled',()=>{toast('Đã cài app vào màn hình chính');});
 </script>
 </body>
 </html>
